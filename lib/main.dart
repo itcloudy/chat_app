@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/physics.dart';
-import 'dart:math';
 
-const BOX_COLOR = Colors.cyan;
 
 void main() => runApp(MyApp());
 
@@ -11,163 +8,121 @@ class MyApp extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Spring Box",
-      theme: ThemeData(
-        primaryColor: Colors.red,
-      ),
-      home: HomePage(),
-    );
-  }
-}
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        child: Padding(
-          child: PhysicsBox(boxPosition: 0.0),
-          padding: EdgeInsets.only(left: 10.0,right: 10.0,top: 20.0,bottom: 20.0),
-
-        ),
-      )
-    );
-  }
-}
-
-class PhysicsBox extends StatefulWidget {
-  final  boxPosition;
-  PhysicsBox({this.boxPosition=0.0});
-  @override
-  _PhysicsBoxState createState() => _PhysicsBoxState();
-}
-
-class _PhysicsBoxState extends State<PhysicsBox> with TickerProviderStateMixin {
-
-  double boxPosition;
-  double boxPositionOnStart;
-  Offset start;
-  Offset point;
-
-  AnimationController controller;
-  ScrollSpringSimulation simulation;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanStart: startDrag,
-      onPanUpdate: onDrag,
-      onPanEnd: endDrag,
-      child: CustomPaint(
-        painter: BoxPainter(
-          color: BOX_COLOR,
-          boxPosition: boxPosition,
-          boxPositionOnStart: boxPositionOnStart ?? boxPosition,
-          touchPoint: point,
-        ),
-        child: Container(
-
-        ),
+      home: Scaffold(
+        body: App(),
       ),
     );
   }
-  void startDrag(DragStartDetails details){
-    start = (context.findRenderObject() as RenderBox)
-        .globalToLocal(details.globalPosition);
-    boxPositionOnStart = boxPosition;
+}
+
+class App extends StatefulWidget {
+  @override
+  _AppState createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  Color caughtColor = Colors.grey;
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: <Widget>[
+        DragBox(Offset(0.0, 0.0),"Box One",Colors.lime),
+        DragBox(Offset(200.0, 0.0),"Box Two",Colors.orange),
+        Positioned(
+          left: 100.0,
+          bottom: 0.0,
+          child: DragTarget(
+            onAccept: (Color color){
+              caughtColor = color;
+            },
+              builder: (
+                  BuildContext context,
+                  List<dynamic> accepted,
+                  List<dynamic> rejected,
+                  ){
+                return Container(
+                  width: 200.0,
+                  height: 200.0,
+                  decoration: BoxDecoration(
+                    color: accepted.isEmpty ? caughtColor: Colors.grey.shade200,
+                  ),
+                  child: Center(
+                    child: Text("Drag Here!"),
+                  ),
+                );
+              },
+          ),
+        )
+      ],
+    );
   }
-  void onDrag(DragUpdateDetails details){
-    setState(() {
-      point = (context.findRenderObject() as RenderBox)
-          .globalToLocal(details.globalPosition);
-      final dragVec = start.dy - point.dy;
-      final normDragVec = (dragVec/context.size.height).clamp(-1.0,1.0);
-      boxPosition = (boxPositionOnStart +normDragVec).clamp(0.0, 1.0);
-    });
-  }
-  void endDrag(DragEndDetails details){
-    setState(() {
-      start = null;
-      point = null ;
-      boxPositionOnStart = null;
-    });
-  }
+
+}
+class DragBox extends StatefulWidget {
+
+  final Offset initPos;
+  final String label;
+  final Color itemColor;
+
+  DragBox(this.initPos, this.label, this.itemColor);
+
+  @override
+  _DragBoxState createState() => _DragBoxState();
+}
+
+class _DragBoxState extends State<DragBox> {
+  Offset position = Offset(0.0, 0.0);
+
   @override
   void initState() {
     super.initState();
-    boxPosition = widget.boxPosition;
-    simulation = ScrollSpringSimulation(
-        SpringDescription(
-          mass: 1.0,
-          stiffness: 1.0,
-          damping: 1.0,
+    position =widget.initPos;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: position.dx,
+      top: position.dy,
+      child: Draggable(
+        data: widget.itemColor,
+          child: Container(
+            width: 100.0,
+            height: 100.0,
+            color: widget.itemColor,
+            child: Center(
+              child: Text(
+                widget.label,
+                style: TextStyle(
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
+                  fontSize: 20.0,
+                ),
+              ),
+            ),
+          ),
+        onDraggableCanceled: (velocity,offset){
+          setState(() {
+            position = offset;
+          });
+        },
+        feedback: Container(
+          width: 120.0,
+          height: 120.0,
+          color: widget.itemColor.withOpacity(0.5),
+          child: Center(
+            child: Text(
+              widget.label,
+              style: TextStyle(
+                color: Colors.white,
+                decoration: TextDecoration.none,
+                fontSize: 18.0,
+              ),
+            ),
+          ),
         ),
-        0.0,
-        0.0,
-        0.0
+      ),
     );
-    controller =AnimationController(vsync: this)
-    ..addListener((){
-      print('${simulation.x(controller.value)}');
-    });
   }
-
 }
 
-class BoxPainter extends CustomPainter{
-  final double boxPosition;
-  final double boxPositionOnStart;
-  final Color color;
-  final Offset touchPoint;
-  final Paint boxPaint;
-  final Paint dropPaint;
-
-  BoxPainter({
-    this.boxPosition = 0.0,
-    this.boxPositionOnStart = 0.0,
-    this.color = Colors.grey,
-    this.touchPoint,
-  }):boxPaint = Paint(),
-  dropPaint = Paint(){
-    boxPaint.color = this.color;
-    boxPaint.style = PaintingStyle.fill;
-    dropPaint.color = Colors.grey;
-    dropPaint.style = PaintingStyle.fill;
-
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return true;
-  }
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.clipRect(Rect.fromLTWH(0.0, 0.0, size.width, size.height));
-    final boxValueY = size.height - (size.height * boxPosition);
-    final preBoxValueY = size.height -(size.height * boxPositionOnStart);
-    final midPointY = ((boxValueY - preBoxValueY) * 1.2 +preBoxValueY)
-    .clamp(0.0, size.height);
-
-    Point left,mid,right;
-    left = Point(-100.0, preBoxValueY);
-    right = Point(size.width + 50.0, preBoxValueY);
-    if (null != touchPoint){
-      mid = Point(touchPoint.dx, midPointY);
-    }else{
-      mid = Point(size.width /2 , midPointY);
-    }
-    final path = Path();
-    path.moveTo(mid.x, mid.y);
-    path.quadraticBezierTo(mid.x-100.0, mid.y, left.x, left.y);
-    path.lineTo(0.0, size.height);
-    path.moveTo(mid.x, mid.y);
-    path.quadraticBezierTo(mid.x + 100 , mid.y, right.x, right.y);
-    path.lineTo(size.width, size.height);
-    path.lineTo(0.0, size.height);
-    path.close();
-    canvas.drawPath(path, boxPaint);
-    canvas.drawCircle(Offset(right.x, right.y), 10.0, dropPaint);
-  }
-
-
-}
