@@ -5,99 +5,156 @@ import 'package:http/http.dart' as http;
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget{
-
+class MyApp extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Photo Streamer",
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: PhotoList(),
-    );
-  }
-}
-class PhotoList extends StatefulWidget {
-  @override
-  _PhotoListState createState() => _PhotoListState();
-
+  _MyAppState createState() => _MyAppState();
 }
 
-class _PhotoListState extends State<PhotoList> {
-  StreamController<Photo> streamController;
-  List<Photo> list =[];
+class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
+
+  TabController tabController;
 
   @override
   void initState() {
     super.initState();
-    streamController = StreamController.broadcast();
-    streamController.stream.listen((p)=>
-        setState(()=>list.add(p)
-        ));
-    load(streamController);
-  }
-
-  load(StreamController sc) async{
-    String url = "https://jsonplaceholder.typicode.com/photos";
-    var client = new http.Client();
-    var req = new http.Request('get', Uri.parse(url));
-    var streamedRes = await client.send(req); 
-    streamedRes.stream
-    .transform(utf8.decoder)
-    .transform(json.decoder)
-    .expand((e)=>e)
-    .map((map)=>Photo.fromJsonMap(map))
-    .pipe(streamController);
-
+    tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
+    tabController.dispose();
     super.dispose();
-    streamController?.close();
-    streamController = null;
+
+  }
+
+  TabBar makeTabBar(){
+    return TabBar(
+      tabs: <Tab>[
+        Tab(
+          icon: Icon(Icons.home),
+        ),
+        Tab(
+          icon: Icon(Icons.settings_power),
+        ),
+      ],
+      controller: tabController,
+     );
+  }
+  TabBarView makeTabBarView(tabs){
+    return TabBarView(
+      children: tabs,
+      controller: tabController,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Photo Streams"),
-      ),
-      body: Center(
-        child: ListView.builder(
-
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (BuildContext context,int index)=> _makeElement(index),
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.red,
+          bottom: makeTabBar(),
         ),
+        body: makeTabBarView(<Widget>[
+          TheGridView().build(),
+          SimpleWidget(),
+        ]),
       ),
     );
-
   }
-  Widget _makeElement(int index){
-    if (index >= list.length){
-      return null;
-    }
-    return Container(
-      padding: EdgeInsets.all(5.0),
 
-      child: Padding(
-        padding: EdgeInsets.only(top: 200.0),
-        child: Column(
-          children: <Widget>[
-            Image.network(list[index].url,width:150.0,height: 150.0,),
-            Text(list[index].title),
-          ],
-        ),
+}
+
+class SimpleWidget extends StatefulWidget {
+  @override
+  _SimpleWidgetState createState() => _SimpleWidgetState();
+}
+
+class _SimpleWidgetState extends State<SimpleWidget> {
+  int stepCounter = 0;
+  List<Step> steps = [
+    Step(
+      title: Text("Step One"),
+      content: Text("This is the first step"),
+      isActive: true,
+    ),
+    Step(
+      title: Text("Step Two"),
+      content: Text("This is the two step"),
+      isActive: false,
+    ),
+    Step(
+      title: Text("Step Three"),
+      content: Text("This is the three step"),
+      isActive: false,
+    ),
+    Step(
+      title: Text("Step Fourth"),
+      content: Text("This is the fourth step"),
+      isActive: false,
+    ),
+  ];
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Stepper(
+        currentStep: this.stepCounter,
+          steps: steps,
+        type: StepperType.vertical,
+        onStepTapped: (step){
+          setState(() {
+            stepCounter = step;
+          });
+        },
+        onStepCancel: (){
+          setState(() {
+            stepCounter >0 ? stepCounter-=1: stepCounter =0;
+          });
+        },
+        onStepContinue: (){
+          setState(() {
+            stepCounter < steps.length -1 ?
+                stepCounter += 1:
+                stepCounter = 0;
+          });
+        },
       ),
     );
   }
 }
 
 
-class Photo {
-  final String title;
-  final String url;
-  Photo.fromJsonMap(Map map):title =map['title'],url =map['url'];
+class TheGridView {
+  Card makeGridCell(String name,IconData icon){
+    return Card(
+      elevation: 1.0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        verticalDirection: VerticalDirection.down,
+        children: <Widget>[
+          Center(child: Icon(icon)),
+          Center(child: Text(name)),
+        ],
+      ),
+    );
+  }
+  GridView build(){
+    return GridView.count(
+      primary: true,
+      padding: EdgeInsets.all(1.0),
+      crossAxisCount: 2,
+      childAspectRatio: 1.0,
+      mainAxisSpacing: 1.0,
+      crossAxisSpacing: 1.0,
+      children: <Widget>[
+        makeGridCell("Home", Icons.home),
+        makeGridCell("Email", Icons.email),
+        makeGridCell("Chat", Icons.chat_bubble),
+        makeGridCell("New", Icons.new_releases),
+        makeGridCell("Network", Icons.network_wifi),
+        makeGridCell("Options", Icons.settings),
+      ],
+    );
+  }
 }
