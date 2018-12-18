@@ -19,21 +19,16 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin{
     animationController = AnimationController(
         duration: Duration(milliseconds: 10000), vsync: this);
 
-    animation = Tween(begin: 0.0,end: 5000.0).animate(animationController)
-    ..addListener((){
-      setState(() {});
-    });
+    animation = Tween(begin: 0.0,end: 5000.0).animate(animationController);
+
+
     animationController.forward();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        height: animation.value,
-        width: animation.value,
-        child: FlutterLogo(),
-      ),
+    return LogoAnimation(
+      animation: animation,
     );
   }
 
@@ -41,6 +36,23 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin{
   void dispose() {
     animationController.dispose();
     super.dispose();
+  }
+
+}
+
+class LogoAnimation extends AnimatedWidget{
+  LogoAnimation({Key key,Animation animation}):super(key:key,listenable:animation);
+
+  @override
+  Widget build(BuildContext context) {
+     Animation animation = listenable;
+     return Center(
+       child: Container(
+         height: animation.value,
+         width: animation.value,
+         child: FlutterLogo(),
+       ),
+     );
   }
 
 }
