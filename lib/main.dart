@@ -17,10 +17,16 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin{
   void initState() {
     super.initState();
     animationController = AnimationController(
-        duration: Duration(milliseconds: 10000), vsync: this);
+        duration: Duration(milliseconds: 2000), vsync: this);
 
-    animation = Tween(begin: 0.0,end: 5000.0).animate(animationController);
-
+    animation = Tween(begin: 0.0,end: 400.0).animate(animationController);
+    animation.addStatusListener((status){
+      if (status == AnimationStatus.completed){
+        animationController.reverse();
+      }else if(status == AnimationStatus.dismissed){
+        animationController.forward();
+      }
+    });
 
     animationController.forward();
   }
