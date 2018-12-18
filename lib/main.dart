@@ -5,156 +5,110 @@ import 'package:http/http.dart' as http;
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
 
-class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
-
-  TabController tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    tabController.dispose();
-    super.dispose();
-
-  }
-
-  TabBar makeTabBar(){
-    return TabBar(
-      tabs: <Tab>[
-        Tab(
-          icon: Icon(Icons.home),
-        ),
-        Tab(
-          icon: Icon(Icons.settings_power),
-        ),
-      ],
-      controller: tabController,
-     );
-  }
-  TabBarView makeTabBarView(tabs){
-    return TabBarView(
-      children: tabs,
-      controller: tabController,
-    );
-  }
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.red,
-          bottom: makeTabBar(),
-        ),
-        body: makeTabBarView(<Widget>[
-          TheGridView().build(),
-          SimpleWidget(),
-        ]),
+      title: "Input Boxes",
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
       ),
+      home: InputBox(),
     );
   }
-
 }
 
-class SimpleWidget extends StatefulWidget {
+class InputBox extends StatefulWidget {
   @override
-  _SimpleWidgetState createState() => _SimpleWidgetState();
+  _InputBoxState createState() => _InputBoxState();
 }
 
-class _SimpleWidgetState extends State<SimpleWidget> {
-  int stepCounter = 0;
-  List<Step> steps = [
-    Step(
-      title: Text("Step One"),
-      content: Text("This is the first step"),
-      isActive: true,
-    ),
-    Step(
-      title: Text("Step Two"),
-      content: Text("This is the two step"),
-      isActive: false,
-    ),
-    Step(
-      title: Text("Step Three"),
-      content: Text("This is the three step"),
-      isActive: false,
-    ),
-    Step(
-      title: Text("Step Fourth"),
-      content: Text("This is the fourth step"),
-      isActive: false,
-    ),
-  ];
+class _InputBoxState extends State<InputBox> {
+  bool loggedIn = false;
+  String  _email,_username,_password;
+
+  final formKey = GlobalKey<FormState>();
+  final mainKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Stepper(
-        currentStep: this.stepCounter,
-          steps: steps,
-        type: StepperType.vertical,
-        onStepTapped: (step){
-          setState(() {
-            stepCounter = step;
-          });
-        },
-        onStepCancel: (){
-          setState(() {
-            stepCounter >0 ? stepCounter-=1: stepCounter =0;
-          });
-        },
-        onStepContinue: (){
-          setState(() {
-            stepCounter < steps.length -1 ?
-                stepCounter += 1:
-                stepCounter = 0;
-          });
-        },
+
+    return Scaffold(
+      key: mainKey,
+      appBar: AppBar(
+        title: Text("Form Example"),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(10.0),
+        child:loggedIn==false? Form(
+          key:formKey,
+            child:  Column(
+              children: <Widget>[
+                TextFormField(
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                    labelText: "Email:"
+                  ),
+                  validator:(str) => !str.contains('@') ? 'Not a valid Email': null,
+                  onSaved: (str)=> _email =str,
+                ),
+                TextFormField(
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                      labelText: "Username:"
+                  ),
+                  validator:(str)=>str.length <5 ?'Not a valid Username': null ,
+                  onSaved: (str)=> _username =str,
+                ),
+                TextFormField(
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                      labelText: "Password:"
+                  ),
+                  validator:(str)=>str.length <7 ?'Not a valid Password': null ,
+                  onSaved: (str)=> _password =str,
+                  obscureText: true,
+                ),
+                RaisedButton(
+                  child: Text("Submit"),
+                  onPressed: onPressed,
+                ),
+              ],
+            ),
+        ):Center(
+          child: Column(
+            children: <Widget>[
+              Text("Welcome $_username"),
+              RaisedButton(
+                child: Text("Log Out"),
+                onPressed: (){
+                  setState(() {
+                    loggedIn = false;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
-}
+  void onPressed(){
+    var form = formKey.currentState;
+    if (form.validate()){
+      form.save();
+      setState(() {
+        loggedIn = true;
+      });
+      var snackbar = SnackBar(
+        content: Text(
+            'Username: $_username, Email: $_email, Password: $_password'
+        ),
+        duration: Duration(microseconds: 5000),
+      );
+      mainKey.currentState.showSnackBar(snackbar);
+    }
 
-
-class TheGridView {
-  Card makeGridCell(String name,IconData icon){
-    return Card(
-      elevation: 1.0,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        verticalDirection: VerticalDirection.down,
-        children: <Widget>[
-          Center(child: Icon(icon)),
-          Center(child: Text(name)),
-        ],
-      ),
-    );
-  }
-  GridView build(){
-    return GridView.count(
-      primary: true,
-      padding: EdgeInsets.all(1.0),
-      crossAxisCount: 2,
-      childAspectRatio: 1.0,
-      mainAxisSpacing: 1.0,
-      crossAxisSpacing: 1.0,
-      children: <Widget>[
-        makeGridCell("Home", Icons.home),
-        makeGridCell("Email", Icons.email),
-        makeGridCell("Chat", Icons.chat_bubble),
-        makeGridCell("New", Icons.new_releases),
-        makeGridCell("Network", Icons.network_wifi),
-        makeGridCell("Options", Icons.settings),
-      ],
-    );
   }
 }
