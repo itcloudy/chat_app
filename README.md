@@ -7,4 +7,5 @@
 * [Using GridView, Tabs, and Steppers in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-5)
 * [Using Global Keys to get State and Validate Input in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-6)
 * [The Basics of Animation with Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-7)
+* [Advanced Physics Based Animations in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-8)
 
