@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget{
@@ -8,121 +7,82 @@ class MyApp extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        body: App(),
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+      ),
+      home: TempApp(),
+    );
+  }
+}
+class TempApp extends StatefulWidget {
+  @override
+  _TempAppState createState() => _TempAppState();
+}
+
+class _TempAppState extends State<TempApp> {
+  double input;
+  double output;
+  bool fOrC;
+
+  @override
+  Widget build(BuildContext context) {
+    TextField inputFiled = TextField(
+      keyboardType: TextInputType.number,
+      onChanged: (str){
+        try{
+          input = double.parse(str);
+        }catch(e){
+          input = 0.0;
+        }
+      },
+      decoration: InputDecoration(
+        labelText:
+          "Input a Value ${fOrC == false ? "Fahrenheit":"Celsius"}",
+      ),
+    );
+
+    AppBar appBar = AppBar(
+      title: Text("Temperature Calculator"),
+
+    );
+
+    Container tempSwitch = Container(
+      child: Column(
+        children: <Widget>[
+          Text("Choose Fahrenheit or Celsius"),
+          Switch(
+              value: fOrC,
+              onChanged: (e){
+                setState(() {
+                  fOrC = !fOrC;
+                });
+              }
+          ),
+        ],
+      ),
+    );
+    return Scaffold(
+      body: Container(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            inputFiled,
+            tempSwitch
+          ],
+        ),
+      ),
+      appBar: AppBar(
+        title: Text("Temperature Calculator"),
       ),
     );
   }
-}
-
-class App extends StatefulWidget {
-  @override
-  _AppState createState() => _AppState();
-}
-
-class _AppState extends State<App> {
-  Color caughtColor = Colors.grey;
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        DragBox(Offset(0.0, 0.0),"Box One",Colors.lime),
-        DragBox(Offset(200.0, 0.0),"Box Two",Colors.orange),
-        Positioned(
-          left: 100.0,
-          bottom: 0.0,
-          child: DragTarget(
-            onAccept: (Color color){
-              caughtColor = color;
-            },
-              builder: (
-                  BuildContext context,
-                  List<dynamic> accepted,
-                  List<dynamic> rejected,
-                  ){
-                return Container(
-                  width: 200.0,
-                  height: 200.0,
-                  decoration: BoxDecoration(
-                    color: accepted.isEmpty ? caughtColor: Colors.grey.shade200,
-                  ),
-                  child: Center(
-                    child: Text("Drag Here!"),
-                  ),
-                );
-              },
-          ),
-        )
-      ],
-    );
-  }
-
-}
-class DragBox extends StatefulWidget {
-
-  final Offset initPos;
-  final String label;
-  final Color itemColor;
-
-  DragBox(this.initPos, this.label, this.itemColor);
-
-  @override
-  _DragBoxState createState() => _DragBoxState();
-}
-
-class _DragBoxState extends State<DragBox> {
-  Offset position = Offset(0.0, 0.0);
 
   @override
   void initState() {
     super.initState();
-    position =widget.initPos;
+    input = 0.0;
+    output = 0.0;
+    fOrC = true;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: position.dx,
-      top: position.dy,
-      child: Draggable(
-        data: widget.itemColor,
-          child: Container(
-            width: 100.0,
-            height: 100.0,
-            color: widget.itemColor,
-            child: Center(
-              child: Text(
-                widget.label,
-                style: TextStyle(
-                  color: Colors.white,
-                  decoration: TextDecoration.none,
-                  fontSize: 20.0,
-                ),
-              ),
-            ),
-          ),
-        onDraggableCanceled: (velocity,offset){
-          setState(() {
-            position = offset;
-          });
-        },
-        feedback: Container(
-          width: 120.0,
-          height: 120.0,
-          color: widget.itemColor.withOpacity(0.5),
-          child: Center(
-            child: Text(
-              widget.label,
-              style: TextStyle(
-                color: Colors.white,
-                decoration: TextDecoration.none,
-                fontSize: 18.0,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
-
