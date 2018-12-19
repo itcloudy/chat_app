@@ -10,5 +10,4 @@
 * [Advanced Physics Based Animations in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-8)
 * [Advanced Physics Based Animations in Darts Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-9)
 * [Building a Temperature Conversion Application using Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-10)
-
-
+* [Building a List in Redux with Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-25)
