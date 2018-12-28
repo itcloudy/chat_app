@@ -11,4 +11,6 @@
 * [Advanced Physics Based Animations in Darts Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-9)
 * [Building a Temperature Conversion Application using Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-10)
 * [Using Inherited Widgets and Gesture Detectors in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-11)
+* [Using Gradients, Fractional Offsets, Page Views and Other Widgets in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-12)
+
 * [Building a List in Redux with Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-25)

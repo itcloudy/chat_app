@@ -2,92 +2,74 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
-import 'dart:math';
 
-void main() => runApp(MaterialApp(
-  title: 'Random Squares',
-  home: MyApp(),
-));
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
 
-class _MyAppState extends State<MyApp> {
-  final Random _random = Random();
-  Color color = Colors.amber;
+void main() => runApp(MyApp());
 
-  void onTap(){
-    print("ontap");
-    setState(() {
-      color = Color.fromRGBO(
-        _random.nextInt(256),
-          _random.nextInt(256),
-          _random.nextInt(256),
-      _random.nextDouble());
-    });
-  }
-
+class MyApp extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    return ColorState(
-      color: color,
-      onTap: onTap,
-      child: BoxTree(),
+    return MaterialApp(
+      title: "Gallery Demo",
+      theme: ThemeData(primarySwatch: Colors.lightGreen),
+      home: DisplayPage(),
     );
   }
 }
 
-class ColorState extends InheritedWidget{
-  ColorState({
-   Key key,
-   this.color,
-   this.onTap,
-    Widget child,
-}):super(key:key,child:child);
-  final Color color;
-  final Function onTap;
-
-  @override
-  bool updateShouldNotify(ColorState oldWidget) {
-    return color !=oldWidget.color;
-  }
-  static ColorState of(BuildContext context){
-   return context.inheritFromWidgetOfExactType(ColorState);
-  }
-
-}
-class BoxTree extends StatelessWidget {
+class DisplayPage extends StatelessWidget {
+  final List<String> images = [
+    'images/1.jpg',
+    'images/2.jpg',
+    'images/3.jpg',
+  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Row(
-          children: <Widget>[
-            Box(),
-            Box(), 
-          ],
+        child: SizedBox.fromSize(
+          size: Size.fromHeight(550.0),
+          child: PageView.builder(
+            controller: PageController(viewportFraction: 1.0),
+            itemCount: images.length,
+            itemBuilder: (BuildContext context,int index){
+              return new Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: 16.0,
+                  horizontal: 8.0,
+                ),
+                child: Material(
+                  elevation: 5.0,
+                  borderRadius: BorderRadius.circular(8.0),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: <Widget>[
+                       Image.asset(
+                         images[index],
+                         fit: BoxFit.cover,
+                       ),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: FractionalOffset.bottomRight,
+                            end: FractionalOffset.topLeft,
+                            colors: [
+                              Color(0x1c6d6c).withOpacity(0.2),
+                              Color(0xf10101).withOpacity(0.2),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
   }
 }
-class Box extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final colorState = ColorState.of(context);
-    return GestureDetector(
-      onTap: colorState.onTap,
-      child: Container(
-        width: 50.0,
-        height: 50.0,
-        margin: EdgeInsets.only(left: 80.0),
-        color: colorState.color,
-
-      ),
-    );
-  }
-}
-
