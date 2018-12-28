@@ -1,112 +1,93 @@
+// Copyright 2018 itcloudy@qq.com.  All rights reserved.
+// Use of this source code is governed by a MIT style
+// license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
-import 'package:redux/redux.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+import 'dart:math';
 
+void main() => runApp(MaterialApp(
+  title: 'Random Squares',
+  home: MyApp(),
+));
 
-class ListState{
-  final List<String> items;
-  ListState({this.items});
-
-  ListState.initialState():items =[];
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
 }
 
-class AddAction{
-  final String input;
+class _MyAppState extends State<MyApp> {
+  final Random _random = Random();
+  Color color = Colors.amber;
 
-  AddAction({this.input});
-}
-typedef AddItem(String text);
-
-class _ViewModel{
-  final AddItem addItemToList;
-  _ViewModel({this.addItemToList});
-}
-
-ListState reducer(ListState state, action) {
-  if (action is AddAction) {
-    return ListState(
-        items: []
-          ..addAll(state.items)
-          ..add(action.input)
-    );
+  void onTap(){
+    print("ontap");
+    setState(() {
+      color = Color.fromRGBO(
+        _random.nextInt(256),
+          _random.nextInt(256),
+          _random.nextInt(256),
+      _random.nextDouble());
+    });
   }
-  return ListState(items: state.items);
-}
 
-
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget{
-  final store = Store<ListState>(reducer,initialState: ListState.initialState());
 
   @override
   Widget build(BuildContext context) {
-    return StoreProvider<ListState>(
-      store: store,
-      child: MaterialApp(
-        theme: ThemeData.dark(),
-        title: "Redux List App",
-        home: Home(),
-      ),
+    return ColorState(
+      color: color,
+      onTap: onTap,
+      child: BoxTree(),
     );
   }
 }
 
-class Home extends StatelessWidget {
+class ColorState extends InheritedWidget{
+  ColorState({
+   Key key,
+   this.color,
+   this.onTap,
+    Widget child,
+}):super(key:key,child:child);
+  final Color color;
+  final Function onTap;
+
+  @override
+  bool updateShouldNotify(ColorState oldWidget) {
+    return color !=oldWidget.color;
+  }
+  static ColorState of(BuildContext context){
+   return context.inheritFromWidgetOfExactType(ColorState);
+  }
+
+}
+class BoxTree extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Redux List"),
-      ),
       body: Center(
-        child: Column(
+        child: Row(
           children: <Widget>[
-            ListInput(),
-            ViewList()
+            Box(),
+            Box(), 
           ],
         ),
       ),
     );
   }
 }
-
-
-class ListInput extends StatefulWidget {
-  @override
-  _ListInputState createState() => _ListInputState();
-}
-
-class _ListInputState extends State<ListInput> {
-  final TextEditingController controller = TextEditingController();
+class Box extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StoreConnector<ListState,_ViewModel>(
-      converter: (store)=> _ViewModel(
-        addItemToList: (inputText) => store.dispatch(AddAction(input: inputText))
-      ) ,
-      builder: (context, viewModel)=>
-        TextField(
-          decoration: InputDecoration(hintText: "Enter an Item"),
-          controller: controller,
-          onSubmitted: (text){
-            viewModel.addItemToList(text);
-            controller.text = "";
-          }
-        )
-        );
-  }
-}
+    final colorState = ColorState.of(context);
+    return GestureDetector(
+      onTap: colorState.onTap,
+      child: Container(
+        width: 50.0,
+        height: 50.0,
+        margin: EdgeInsets.only(left: 80.0),
+        color: colorState.color,
 
-class ViewList extends StatelessWidget {
-
-  @override
-  Widget build(BuildContext context) {
-    return StoreConnector<ListState,List<String>>(
-      converter: (store)=> store.state.items,
-      builder: (context,items)=> Column(
-         children:items.map((i) => ListTile(title: Text(i))).toList(),
       ),
     );
   }
 }
+
