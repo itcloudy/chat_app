@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:async';
+
+
 
 void main() => runApp(MyApp());
 
@@ -13,102 +13,40 @@ class MyApp extends StatelessWidget{
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('Fultter Shared_Prefs Example'),
-        ),
-        body: Home(),
-      ),
-    );
-  }
-}
+        body: Container(
+          child: Center(
+            child: Transform(
+              transform: Matrix4.identity(),
+              child: Container(
+                height: 280.0,
+                width: 280.0,
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    colors: <Color>[
+                      Color(0xffef5350),
+                      Color(0x00ef5350),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(1000.0),
+                  border: Border.all(
+                    color: Colors.black54,
+                  ),
+                ),
 
-class Home extends StatefulWidget {
-  @override
-  _HomeState createState() => _HomeState();
-}
-
-class _HomeState extends State<Home> {
-
-  Future<SharedPreferences> _sPrefs = SharedPreferences.getInstance();
-  final TextEditingController controller = TextEditingController();
-  List<String> listOne,listTwo;
-
-
-  @override
-  void initState() {
-    super.initState();
-    listOne = [];
-    listTwo = [];
-  }
-
-  Future<Null> addString()async{
-    final SharedPreferences prefs  = await _sPrefs;
-    listOne.add(controller.text);
-    prefs.setStringList('list', listOne);
-    setState(() {
-      controller.text = '';
-    });
-  }
-
-  Future<Null> clearItems()async{
-    final SharedPreferences prefs = await _sPrefs;
-    prefs.clear();
-    setState(() {
-      listOne = [];
-      listTwo = [];
-    });
-  }
-
-  Future<Null> getStrings()async{
-    final SharedPreferences prefs = await _sPrefs;
-    listTwo = prefs.getStringList('list');
-    setState(() {
-
-    });
-  }
-  Future<Null> updateStrings(String str) async{
-    final SharedPreferences prefs = await _sPrefs;
-    setState(() {
-      listOne.remove(str);
-    });
-    prefs.setStringList('list', listOne);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    getStrings();
-    return Center(
-      child: ListView(
-        children: <Widget>[
-          TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: "Type in something ...",
+                alignment: Alignment.center,
+                child: Text(
+                  "Stylig Stuff",
+                  style: TextStyle(
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.w900,
+                    fontFamily: "Georgia",
+                  ),
+//                textAlign: TextAlign.center,
+                ),
+              ),
             ),
           ),
-          RaisedButton(
-            child: Text("Submit"),
-            onPressed: (){
-              addString();
-            },
-          ),
-          RaisedButton(
-            child: Text('Clear'),
-            onPressed: (){clearItems();},
-          ),
-          Flex(
-            direction: Axis.vertical,
-            children: listTwo ==null ?[ ]:listTwo.map((String s)=>Dismissible(
-              key: Key(s),
-              onDismissed: (direction){
-                updateStrings(s);
-              },
-              child: ListTile(
-                title: Text(s),
-              ),
-            )).toList(),
-          ),
-        ],
+        ),
       ),
     );
   }
