@@ -14,7 +14,7 @@
 * [Using Gradients, Fractional Offsets, Page Views and Other Widgets in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-12)
 * [Building a Calculator Layout using Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-13)
 * [Finishing our Calculator Application with Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-14)
-
+* [Making use of Shared Preferences, Flex Widgets and Dismissibles with Dart's Flutter framework](https://github.com/itcloudy/chat_app/tree/chapter-15)
 * [Building a List in Redux with Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-25)
 
 
