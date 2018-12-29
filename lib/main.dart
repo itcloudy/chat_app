@@ -27,21 +27,33 @@ class MyApp extends StatelessWidget{
                       Color(0x00ef5350),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(1000.0),
-                  border: Border.all(
-                    color: Colors.black54,
-                  ),
+                  boxShadow: <BoxShadow>[
+//                    BoxShadow(
+//                      color: Color(0xcc000000),
+//                      offset: Offset(0.0, 2.0),
+//                      blurRadius: 4.0,
+//                    ),
+//                    BoxShadow(
+//                      color: Color(0x80000000),
+//                      offset: Offset(0.0, 6.0),
+//                      blurRadius: 20.0,
+//                    ),
+                  ],
+//                  borderRadius: BorderRadius.circular(1000.0),
+//                  border: Border.all(
+//                    color: Colors.black54,
+//                  ),
+                  shape: BoxShape.rectangle,
                 ),
 
                 alignment: Alignment.center,
-                child: Text(
-                  "Stylig Stuff",
-                  style: TextStyle(
-                    fontSize: 24.0,
-                    fontWeight: FontWeight.w900,
-                    fontFamily: "Georgia",
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(text: 'Stylig '),
+                      TextSpan(text: 'Stuff')
+                    ]
                   ),
-//                textAlign: TextAlign.center,
                 ),
               ),
             ),
