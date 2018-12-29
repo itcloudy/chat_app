@@ -19,17 +19,13 @@ class MyApp extends StatelessWidget{
     );
   }
 }
-class Calculator extends StatefulWidget {
-  @override
-  _CalculatorState createState() => _CalculatorState();
-}
 
-class _CalculatorState extends State<Calculator> {
-  String inputString = "20 + 30";
+class CalculatorLayout extends StatelessWidget {
 
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context)  {
+    final mainState = MainState.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text("Calculator"),
@@ -41,9 +37,10 @@ class _CalculatorState extends State<Calculator> {
               padding: EdgeInsets.all(16.0),
               color: Colors.blueGrey.withOpacity(0.85),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   Text(
-                    inputString,
+                    mainState.inputValue ?? "0",
                     style: TextStyle(
                       color: Colors.black87,
                       fontWeight: FontWeight.w700,
@@ -73,22 +70,149 @@ class _CalculatorState extends State<Calculator> {
       ),
     );
   }
+
   Widget makeBtns(String row){
     List<String> token = row.split("");
     return Expanded(
       flex: 1,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: token.map((e)=>CalcButton(
-            keyvalue:e== '_'? "+/-":e=='<'?"<=":e,
-          ))
-          .toList(),
-        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: token.map((e)=>CalcButton(
+          keyvalue:e== '_'? "+/-":e=='<'?"<=":e,
+        ))
+            .toList(),
+      ),
     );
   }
-  
 }
 
+
+class Calculator extends StatefulWidget {
+  @override
+  _CalculatorState createState() => _CalculatorState();
+}
+
+class _CalculatorState extends State<Calculator> {
+  String inputString = "";
+  double prevValue;
+  String value= "";
+  String op = 'z';
+
+  bool isNumber(String str){
+    if(str ==null){
+      return false;
+    }
+    return double.parse(str)!=null;
+  }
+
+  void onPressed(keyvalue){
+    switch (keyvalue){
+      case "C":
+        op =null;
+        prevValue = 0.0;
+        value = "";
+        setState(()=> inputString="");
+        break;
+      case ".":
+      case "%":
+      case "<=":
+      case "+/-":
+        break;
+      case "x":
+      case "+":
+      case "-":
+      case "/":
+      op  =keyvalue;
+      value = '';
+      prevValue = double.parse(inputString);
+      setState(() {
+        inputString = inputString + keyvalue;
+      });
+      break;
+      case "=":
+        if (op!=null){
+          setState(() {
+            switch(op){
+              case 'x':
+                inputString = (prevValue * double.parse(value)).toStringAsFixed(0);
+                break;
+              case '+':
+                inputString = (prevValue +double.parse(value)).toStringAsFixed(0);
+                break;
+              case '-':
+                inputString = (prevValue - double.parse(value)).toStringAsFixed(0);
+                break;
+              case '/':
+                inputString = (prevValue / double.parse(value)).toStringAsFixed(2);
+                break;
+
+            }
+          });
+          op = null;
+          prevValue = double.parse(inputString);
+          value = '';
+          break;
+        }
+        break;
+      default:
+        if (isNumber(keyvalue)){
+          if (op !=null){
+            setState(() {
+              inputString = inputString +keyvalue;
+            });
+            value = value +keyvalue;
+          }else{
+            setState(() {
+              inputString = "" +keyvalue;
+            });
+            op = 'z';
+          }
+        }else{
+          onPressed(keyvalue);
+        }
+
+    }
+  }
+  @override
+  Widget build(BuildContext context) {
+    return MainState(
+      inputValue: inputString,
+      prevValue: prevValue,
+      value: value,
+      op:op,
+      onPressed: onPressed,
+      child: CalculatorLayout(),
+    );
+  }
+
+}
+
+
+class MainState extends InheritedWidget{
+  MainState({
+    Key key,
+    this.inputValue,
+    this.prevValue,
+    this.value,
+    this.op,
+    this.onPressed,
+    Widget child,
+  }):super(key:key,child:child);
+
+  final String inputValue;
+  final double prevValue;
+  final String value;
+  final String op;
+  final Function onPressed;
+
+  @override
+  bool updateShouldNotify(MainState oldWidget) {
+    return inputValue != oldWidget.inputValue;
+  }
+  static MainState of(BuildContext context){
+    return context.inheritFromWidgetOfExactType(MainState);
+  }
+}
 
 class CalcButton extends StatelessWidget {
   final String keyvalue;
@@ -97,6 +221,7 @@ class CalcButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mainState = MainState.of(context);
     return Expanded(
       flex: 1,
       child: FlatButton(
@@ -107,7 +232,7 @@ class CalcButton extends StatelessWidget {
         ),
         color: Colors.white,
         onPressed: (){
-
+          mainState.onPressed(keyvalue);
         },
         child: Text(
           keyvalue,

@@ -13,8 +13,10 @@
 * [Using Inherited Widgets and Gesture Detectors in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-11)
 * [Using Gradients, Fractional Offsets, Page Views and Other Widgets in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-12)
 * [Building a Calculator Layout using Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-13)
-
+* [Finishing our Calculator Application with Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-14)
 
 * [Building a List in Redux with Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-25)
 
 
+
+Building a Calculator Layout using Dart's Flutter Framework
