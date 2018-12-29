@@ -2,210 +2,163 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'package:flutter/scheduler.dart';
+import 'dart:math' as math;
 
-void main() => runApp(MyApp());
+
+void main() => runApp( MaterialApp(
+  home: MyApp(),
+  theme: ThemeData(
+    canvasColor: Colors.blueGrey,
+    iconTheme: IconThemeData(
+      color: Colors.white,
+    ),
+    accentColor: Colors.pinkAccent,
+    brightness: Brightness.dark,
+  ),
+));
+
 
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with TickerProviderStateMixin {
-  AnimationController _controller;
+class _MyAppState extends State<MyApp>  with TickerProviderStateMixin{
+  AnimationController controller;
+  String get timerString{
+    Duration duration = controller.duration * controller.value;
+    return '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2,'0')}';
+  }
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: Duration(milliseconds: 2000),
-      vsync: this
+    controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 20),
     );
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  Future _startAnimation() async{
-    try{
-      await _controller.forward().orCancel;
-      await _controller.reverse().orCancel;
-    } on TickerCanceled{
-      print("Animation Failed");
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    timeDilation = 10.0;
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text("Animations"),
-        ),
-        body: GestureDetector(
-          onTap: (){
-            _startAnimation();
-          },
-          child: Center(
-            child: Container(
-              width: 350.0,
-              height: 350.0,
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.1),
-                border: Border.all(
-                  color: Colors.blueGrey.withOpacity(0.8),
-                )
-              ),
-              child: AnimationBox(
-                controller: _controller,
+    ThemeData themeData = Theme.of(context);
+    return Scaffold(
+      body: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Column(
+          children: <Widget>[
+            Expanded(
+              child: Align(
+                alignment: FractionalOffset.center,
+                child: AspectRatio(
+                  aspectRatio: 1.0,
+                  child: Stack(
+                    children: <Widget>[
+                      Positioned.fill(
+                        child: AnimatedBuilder(
+                            animation: controller,
+                            builder: (BuildContext context,Widget child){ 
+                              return new CustomPaint(
+                                painter: TimerPainter(
+                                  animation: controller,
+                                  backgroundColor: Colors.white,
+                                  color: themeData.indicatorColor,
+                                ),
+                              );
+                            }),
+                      ),
+                      Align(
+                        alignment: FractionalOffset.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: <Widget>[
+                            Text(
+                              "Count Down",
+                              style: themeData.textTheme.subhead,
+                            ),
+                            AnimatedBuilder(
+                              animation: controller,
+                              builder: (BuildContext context,Widget child){
+                                return new Text(
+                                  timerString,
+                                  style: themeData.textTheme.display4,
+                                );
+                              },
+
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
+            Container(
+              margin: EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: <Widget>[
+                  FloatingActionButton(
+                    child: AnimatedBuilder(
+                        animation: controller,
+                        builder: (BuildContext context ,Widget child){
+                          return new Icon(controller.isAnimating ? Icons.pause:Icons.play_arrow);
+                        },
+                    ),
+                    onPressed: (){
+                      if (controller.isAnimating){
+                        controller.stop();
+                      }else{
+                        controller.reverse(
+                          from: controller.value == 0.0 ? 1.0 :controller.value
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-
 
 }
-class AnimationBox extends StatelessWidget {
-  AnimationBox({Key key,this.controller})
-  :opacity = Tween<double>(
-    begin: 0.0,
-    end: 1.0,
-  ).animate(
-    CurvedAnimation(
-      parent: controller,
-      curve: Interval(
-        0.0,
-        0.1,
-        curve: Curves.fastOutSlowIn,
-      ),
-    ),
-  ),
-  rotate = Tween<double>(
-    begin: 0.0,
-    end: 3.141 * 4,
-  ).animate(
-    CurvedAnimation(
-      parent: controller,
-      curve: Interval(
-        0.1,
-        0.3,
-        curve: Curves.ease,
-      ),
-    ),
-  ),
-  movement = EdgeInsetsTween(
-    begin: EdgeInsets.only(bottom: 10,left: 0.0),
-    end: EdgeInsets.only(bottom: 100.0,left: 75.0),
-  ).animate(
-    CurvedAnimation(
-      parent: controller,
-      curve: Interval(
-        0.3,
-        0.4,
-        curve: Curves.fastOutSlowIn,
-      ),
-    ),
-  ),
-  width = Tween<double>(
-    begin: 50.0,
-    end: 200.0,
-  ).animate(
-    CurvedAnimation(
-      parent: controller,
-      curve: Interval(
-        0.4,
-        0.5,
-        curve: Curves.fastOutSlowIn,
-      ),
-    ),
-  ),
-  height = Tween<double>(
-    begin: 50.0,
-    end: 200.0,
-  ).animate(
-    CurvedAnimation(
-      parent: controller,
-      curve: Interval(
-        0.4,
-        0.5,
-        curve: Curves.fastOutSlowIn,
-      ),
-    ),
-  ),
-  radius = BorderRadiusTween(
-    begin: BorderRadius.circular(0.0),
-    end: BorderRadius.circular(100.0),
-  ).animate(
-    CurvedAnimation(
-      parent:controller,
-      curve: Interval(
-        0.6,
-        0.75,
-        curve: Curves.ease,
-      )
-    ),
-  ),
-  color = ColorTween(
-    begin: Colors.red[200],
-    end: Colors.deepPurple[900],
-  ).animate(
-    CurvedAnimation(
-      parent: controller,
-      curve: Interval(
-        0.0,
-        0.75,
-        curve: Curves.linear,
-      ),
-    ),
-  ),
-  super(key:key);
 
-  final Animation<double> controller;
-  final Animation<double> opacity;
-  final Animation<double> width;
-  final Animation<double> height;
-  final Animation<EdgeInsets> movement;
-  final Animation<BorderRadius> radius;
-  final Animation<Color> color;
-  final Animation<double> rotate;
+class TimerPainter extends CustomPainter{
+  final Animation<double> animation;
+  final Color backgroundColor, color;
+
+  TimerPainter({
+    this.animation,
+    this.backgroundColor,
+    this.color,
+  }) :super(repaint:animation);
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: controller,
-      builder: (BuildContext context,Widget child){
-        return Container(
-          padding: movement.value,
-          transform: Matrix4.identity()
-          ..rotateZ(rotate.value),
-          alignment: Alignment.center,
-          child: Opacity(
-            opacity: opacity.value,
-            child: Container(
-              height: height.value,
-              width: width.value,
-              decoration: BoxDecoration(
-                color: color.value,
-                border: Border.all(
-                  color: Colors.cyan,
-                  width: 2.0,
-                ),
-                borderRadius: radius.value,
-              ),
-            ),
-          ),
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+        ..color =backgroundColor
+        ..strokeWidth = 5.0
+        ..strokeCap = StrokeCap.round
+        ..style =PaintingStyle.stroke;
 
-        );
-      },
-    );
+    canvas.drawCircle(size.center(Offset.zero), size.width / 2.0, paint);
+    paint.color = color;
+    double progress = (1.0 - animation.value) * 2 * math.pi;
+    canvas.drawArc(Offset.zero & size, math.pi *1.5 , -progress, false, paint);
+
   }
+
+  @override
+  bool shouldRepaint(TimerPainter old) {
+    return animation.value != old.animation.value ||
+    color != old.color ||
+    backgroundColor != old.backgroundColor;
+  }
+
 
 }
