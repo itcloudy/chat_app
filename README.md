@@ -18,6 +18,12 @@
 * [Using the Different Style Widgets and Properties in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-16)
 * [Composing Animations and Chaining Animations in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-17 )
 * [Building a Countdown Timer with a Custom Painter and Animations in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-18)
+* [Reading and Writing Data and Files with Path Provider using Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-19)
+
+
+
+
+
 
 * [Building a List in Redux with Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-25)
 
