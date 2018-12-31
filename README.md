@@ -19,6 +19,7 @@
 * [Composing Animations and Chaining Animations in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-17 )
 * [Building a Countdown Timer with a Custom Painter and Animations in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-18)
 * [Reading and Writing Data and Files with Path Provider using Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-19)
+* [Exploring Webviews and the Url Launcher Plugin in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-20)
 
 
 
