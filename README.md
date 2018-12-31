@@ -20,7 +20,8 @@
 * [Building a Countdown Timer with a Custom Painter and Animations in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-18)
 * [Reading and Writing Data and Files with Path Provider using Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-19)
 * [Exploring Webviews and the Url Launcher Plugin in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-20)
-
+* [Building a Movie Searcher with RxDart and SQLite in Dart's Flutter Framework (Part 1)](https://github.com/itcloudy/chat_app/tree/chapter-21)
+*
 
 
 
