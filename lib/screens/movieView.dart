@@ -6,10 +6,10 @@ import 'package:chat_app/model/model.dart';
 import 'package:chat_app/database/database.dart';
 
 class MovieView extends StatefulWidget {
-  MovieView(this.movie,this.database);
+  MovieView(this.movie);
 
   final Movie movie;
-  final MovieDatabase database;
+
 
   @override
   _MovieViewState createState() => _MovieViewState();
@@ -17,7 +17,16 @@ class MovieView extends StatefulWidget {
 
 class _MovieViewState extends State<MovieView> {
   Movie movieState;
-  MovieDatabase db;
+
+  void onPressed(){
+    MovieDatabase db = MovieDatabase();
+    setState(() {
+      movieState.favored = !movieState.favored;
+      movieState.favored ==true ? db.addMovie(movieState)
+          : db.deleteMovie(movieState.id);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ExpansionTile(
@@ -40,11 +49,7 @@ class _MovieViewState extends State<MovieView> {
         icon: movieState.favored ? Icon(Icons.star) : Icon(Icons.star_border),
         color: Colors.white,
         onPressed: () {
-          setState(() {
-            movieState.favored = !movieState.favored;
-            movieState.favored ==true ? db.addMovie(movieState)
-            : db.deleteMovie(movieState.id);
-          });
+          onPressed();
         },
       ),
       title: Container(
@@ -85,6 +90,14 @@ class _MovieViewState extends State<MovieView> {
   void initState() {
     super.initState();
     movieState = widget.movie;
-    db = widget.database;
+    MovieDatabase db = MovieDatabase();
+    db.getMovie(movieState.id).then((movie){
+      if (movie!=null){
+        setState(() {
+          movieState.favored = movie.favored;
+        });
+      }
+
+    });
   }
 }

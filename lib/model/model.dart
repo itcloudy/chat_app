@@ -15,7 +15,7 @@ class Movie{
     @required this.title,
     @required this.posterPath,
     @required this.id,
-    @required this.overview,
+    @required   this.overview,
     this.favored,
     this.isExpanded
   });
@@ -35,4 +35,12 @@ class Movie{
     map['favored'] = favored;
     return map;
   }
+
+  Movie.fromDb(Map map)
+      :title = map['title'],
+        posterPath = map['poster_path'],
+        id = map['id'].toString(),
+        overview = map['overview'],
+        favored = map['favored'] ==1 ?true :false;
+
 }

@@ -22,7 +22,7 @@
 * [Exploring Webviews and the Url Launcher Plugin in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-20)
 * [Building a Movie Searcher with RxDart and SQLite in Dart's Flutter Framework (Part 1)](https://github.com/itcloudy/chat_app/tree/chapter-21)
 * [Building a Movie Searcher with RxDart and SQLite in Dart's Flutter Framework (Part 2)](https://github.com/itcloudy/chat_app/tree/chapter-22)
-
+* [Building a Movie Searcher with RxDart and SQLite in Dart's Flutter Framework (Part 3, Final)](https://github.com/itcloudy/chat_app/tree/chapter-23)
 
 
 
