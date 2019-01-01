@@ -6,12 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/ui/firebase_animated_list.dart';
 import 'package:firebase_database/firebase_database.dart';
 
-final FirebaseApp app = FirebaseApp(
-    name: "FB Example",
-    options: FirebaseOptions(
-        googleAppID: '1:399856698961:android:154df6fc28c64ab9',
-        apiKey: 'AIzaSyA4yL1XLju0n6QEu0PHEU6HKwOuIC-MkZ8',
-        databaseURL: 'https://example-5506e.firebaseio.com'));
+
 
 void main() => runApp(MyApp());
 
@@ -36,11 +31,23 @@ class _HomeState extends State<Home> {
   Item item;
   DatabaseReference itemRef;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    FirebaseApp app;
+
+  Future<Null> _config() async{
+    app = await FirebaseApp.configure(
+        name: "FB Example",
+        options: FirebaseOptions(
+        googleAppID: '1:399856698961:android:154df6fc28c64ab9',
+        apiKey: 'AIzaSyA4yL1XLju0n6QEu0PHEU6HKwOuIC-MkZ8',
+        databaseURL: 'https://example-5506e.firebaseio.com'
+    ));
+  }
 
   @override
   void initState() {
     super.initState();
     item = Item("", "");
+    _config();
     final FirebaseDatabase database = FirebaseDatabase(app: app);
     itemRef = database.reference().child('items');
     itemRef.onChildAdded.listen(_onEntryAdded);
