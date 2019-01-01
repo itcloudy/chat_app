@@ -23,11 +23,9 @@
 * [Building a Movie Searcher with RxDart and SQLite in Dart's Flutter Framework (Part 1)](https://github.com/itcloudy/chat_app/tree/chapter-21)
 * [Building a Movie Searcher with RxDart and SQLite in Dart's Flutter Framework (Part 2)](https://github.com/itcloudy/chat_app/tree/chapter-22)
 * [Building a Movie Searcher with RxDart and SQLite in Dart's Flutter Framework (Part 3, Final)](https://github.com/itcloudy/chat_app/tree/chapter-23)
-
-
-
-
+* [Adding a Real-time Database to a flutter application with Firebase](https://github.com/itcloudy/chat_app/tree/chapter-24)
 * [Building a List in Redux with Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-25)
+
 
 
 

@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "399856698961",
+    "firebase_url": "https://example-5506e.firebaseio.com",
+    "project_id": "example-5506e",
+    "storage_bucket": "example-5506e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:399856698961:android:154df6fc28c64ab9",
+        "android_client_info": {
+          "package_name": "com.hechihan.chatapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "399856698961-g63iagd4e69v3fd25jkthljho0sks9md.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4yL1XLju0n6QEu0PHEU6HKwOuIC-MkZ8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
