@@ -27,8 +27,8 @@ dependencies:
   flutter_webview_plugin: ^0.3.0
   rxdart: ^0.20.0
   sqflite: any
-  firebase_database: ^0.4.1
-  firebase_core: any
+#  firebase_database: ^0.4.1
+#  firebase_core: any
 
 
 dev_dependencies:

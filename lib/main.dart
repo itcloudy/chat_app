@@ -2,161 +2,112 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/ui/firebase_animated_list.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:redux/redux.dart';
+import 'package:flutter_redux/flutter_redux.dart';
 
 
+class ListState{
+  final List<String> items;
+  ListState({this.items});
+  ListState.initialState(): items = [];
+}
+
+class AddAction{
+  final String input;
+  AddAction({this.input});
+}
+ListState reducer(ListState state,action){
+  if (action is AddAction){
+    return ListState(
+      items: []
+          ..addAll(state.items)
+          ..add(action.input)
+    );
+  }
+  return ListState(items: state.items);
+}
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatelessWidget{
+
+  final store = Store<ListState>(reducer,initialState: ListState.initialState());
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Firebase Example",
-      theme: ThemeData.light(),
-      home: Home(),
+    return StoreProvider<ListState>(
+      store: store,
+      child: MaterialApp(
+        title: "Redux List App",
+        theme: ThemeData.dark(),
+        home: Home(),
+      ),
     );
   }
 }
 
-class Home extends StatefulWidget {
-  @override
-  _HomeState createState() => _HomeState();
-}
-
-class _HomeState extends State<Home> {
-  List<Item> items = List();
-  Item item;
-  DatabaseReference itemRef;
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    FirebaseApp app;
-
-  Future<Null> _config() async{
-    app = await FirebaseApp.configure(
-        name: "FB Example",
-        options: FirebaseOptions(
-        googleAppID: '1:399856698961:android:154df6fc28c64ab9',
-        apiKey: 'AIzaSyA4yL1XLju0n6QEu0PHEU6HKwOuIC-MkZ8',
-        databaseURL: 'https://example-5506e.firebaseio.com'
-    ));
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    item = Item("", "");
-    _config();
-    final FirebaseDatabase database = FirebaseDatabase(app: app);
-    itemRef = database.reference().child('items');
-    itemRef.onChildAdded.listen(_onEntryAdded);
-    itemRef.onChildChanged.listen(_onEntryChanged);
-  }
-
-  _onEntryAdded(Event event) {
-    setState(() {
-      items.add(Item.fromSnapshot(event.snapshot));
-    });
-  }
-
-  _onEntryChanged(Event event) {
-    var old = items.singleWhere((entry) {
-      return entry.key == event.snapshot.key;
-    });
-    setState(() {
-      items[items.indexOf(old)] = Item.fromSnapshot(event.snapshot);
-    });
-  }
-
-  void handleSubmit() {
-    final FormState formState = formKey.currentState;
-    if (formState.validate()) {
-      formState.save();
-      formState.reset();
-      itemRef.push().set(item.toJson());
-    }
-  }
-
+class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("FB example"),
+        title: Text("Redux List"),
       ),
-      resizeToAvoidBottomPadding: false,
-      body: Column(
-        children: <Widget>[
-          Flexible(
-            flex: 0,
-            child: Center(
-              child: Form(
-                key: formKey,
-                child: Flex(
-                  direction: Axis.vertical,
-                  children: <Widget>[
-                    ListTile(
-                      leading: Icon(Icons.info),
-                      title: TextFormField(
-                        initialValue: "",
-                        onSaved: (val) => item.title = val,
-                        validator: (val) => val == "" ? val : null,
-                      ),
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.info),
-                      title: TextFormField(
-                        initialValue: '',
-                        onSaved: (val) => item.body = val,
-                        validator: (val) => val == "" ? val : null,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.send),
-                      onPressed: () {
-                        handleSubmit();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Flexible(
-            child: FirebaseAnimatedList(
-              query: itemRef,
-              itemBuilder: (BuildContext context, DataSnapshot snapshot,
-                  Animation<double> animation, int index) {
-                return ListTile(
-                  leading: Icon(Icons.message),
-                  title: Text(items[index].title),
-                  subtitle: Text(items[index].body),
-                );
-              },
-            ),
-          ),
-        ],
+      body: Center(
+        child: Column(
+          children: <Widget>[
+            ListInput(),
+            ViewList(),
+          ],
+        ),
       ),
     );
   }
 }
 
-class Item {
-  String key;
-  String title;
-  String body;
+typedef AddItem(String text);
 
-  Item(this.title, this.body);
+class _ViewModel{
+  final AddItem addItemToList;
+  _ViewModel({this.addItemToList});
 
-  Item.fromSnapshot(DataSnapshot snapshot)
-      : key = snapshot.key,
-        title = snapshot.value['title'],
-        body = snapshot.value['body'];
+}
 
-  toJson() {
-    return {
-      'title': title,
-      'body': body,
-    };
+class ListInput extends StatefulWidget {
+  @override
+  _ListInputState createState() => _ListInputState();
+}
+
+class _ListInputState extends State<ListInput> {
+  final TextEditingController controller = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    return StoreConnector<ListState,_ViewModel>(
+      converter: (store)=>_ViewModel(
+        addItemToList: (inputText) => store.dispatch(AddAction(input: inputText))
+      ),
+      builder: (context,viewModel){
+         return TextField(
+          decoration: InputDecoration(hintText: "Enter an Item"),
+          controller: controller,
+          onSubmitted: (text){
+            viewModel.addItemToList(text);
+            controller.text = '';
+          },
+        );
+      },
+    );
+  }
+}
+
+class ViewList extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return StoreConnector<ListState,List<String>>(
+      converter: (store)=> store.state.items,
+      builder: (context,items)=> Column(
+        children: items.map((i)=>ListTile(title: Text(i))).toList(),
+      ),
+    );
   }
 }
