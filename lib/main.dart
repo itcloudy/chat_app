@@ -2,62 +2,66 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
-import 'package:redux/redux.dart';
-import 'package:flutter_redux/flutter_redux.dart';
+import 'package:scoped_model/scoped_model.dart';
 
+class AppModel extends Model {
+  int _count = 0;
 
-class ListState{
-  final List<String> items;
-  ListState({this.items});
-  ListState.initialState(): items = [];
-}
+  int get count => _count;
 
-class AddAction{
-  final String input;
-  AddAction({this.input});
-}
-ListState reducer(ListState state,action){
-  if (action is AddAction){
-    return ListState(
-      items: []
-          ..addAll(state.items)
-          ..add(action.input)
-    );
+  void increment() {
+    _count++;
+    notifyListeners();
   }
-  return ListState(items: state.items);
+
+  void decrement() {
+    _count--;
+    notifyListeners();
+  }
 }
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget{
-
-  final store = Store<ListState>(reducer,initialState: ListState.initialState());
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StoreProvider<ListState>(
-      store: store,
-      child: MaterialApp(
-        title: "Redux List App",
-        theme: ThemeData.dark(),
-        home: Home(),
+    return MaterialApp(
+      title: 'Counter Example',
+      theme: ThemeData.dark(),
+      home: ScopedModel<AppModel>(
+        model: AppModel(),
+        child: Home(),
       ),
     );
   }
 }
 
 class Home extends StatelessWidget {
+  final AppModel appModelOne = AppModel();
+  final AppModel appModelTwo = AppModel();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Redux List"),
+        title: Text("Basic Counter"),
       ),
       body: Center(
-        child: Column(
+        child: Row (
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            ListInput(),
-            ViewList(),
+            ScopedModel<AppModel>(
+              model: appModelOne,
+              child: Counter(
+                counterName: "App Model One",
+              ),
+            ),
+            ScopedModel<AppModel>(
+              model: appModelTwo,
+              child: Counter(
+                counterName: "App Model Two",
+              ),
+            ),
           ],
         ),
       ),
@@ -65,48 +69,75 @@ class Home extends StatelessWidget {
   }
 }
 
-typedef AddItem(String text);
+class Counter extends StatelessWidget {
+  final String counterName;
 
-class _ViewModel{
-  final AddItem addItemToList;
-  _ViewModel({this.addItemToList});
+  Counter({Key key,this.counterName});
 
-}
-
-class ListInput extends StatefulWidget {
-  @override
-  _ListInputState createState() => _ListInputState();
-}
-
-class _ListInputState extends State<ListInput> {
-  final TextEditingController controller = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    return StoreConnector<ListState,_ViewModel>(
-      converter: (store)=>_ViewModel(
-        addItemToList: (inputText) => store.dispatch(AddAction(input: inputText))
+    return ScopedModelDescendant<AppModel>(
+      builder: (context,child,model)=>Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text("$counterName:"),
+          Text(
+            model.count.toString(),
+            style: Theme.of(context).textTheme.display1,
+          ),
+          ButtonBar(
+            children: <Widget>[
+              IconButton(
+                icon: Icon(Icons.add),
+                onPressed: model.increment,
+              ),
+              IconButton(
+                icon: Icon(Icons.minimize),
+                onPressed: model.decrement,
+              ),
+            ],
+          ),
+        ],
       ),
-      builder: (context,viewModel){
-         return TextField(
-          decoration: InputDecoration(hintText: "Enter an Item"),
-          controller: controller,
-          onSubmitted: (text){
-            viewModel.addItemToList(text);
-            controller.text = '';
-          },
-        );
-      },
     );
   }
 }
 
-class ViewList extends StatelessWidget {
+
+class Home1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StoreConnector<ListState,List<String>>(
-      converter: (store)=> store.state.items,
-      builder: (context,items)=> Column(
-        children: items.map((i)=>ListTile(title: Text(i))).toList(),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Basic Counter"),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text("Counter:"),
+            ScopedModelDescendant<AppModel>(
+              builder: (context, child, model) => Text(
+                    model.count.toString(),
+                    style: Theme.of(context).textTheme.display1,
+                  ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: ScopedModelDescendant<AppModel>(
+        builder: (context, child, model) => ButtonBar(
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: model.increment,
+                ),
+                IconButton(
+                  icon: Icon(Icons.minimize),
+                  onPressed: model.decrement,
+                ),
+              ],
+            ),
       ),
     );
   }
