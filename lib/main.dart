@@ -1,20 +1,4 @@
-Skip to content
 
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
-@itcloudy Sign out
-1
-0 0 itcloudy/chat_app
-Code  Issues 0  Pull requests 0  Projects 0  Wiki  Insights  Settings
-chat_app/lib/main.dart
-1bafa3f  30 minutes ago
-@itcloudy itcloudy chapter-26
-
-145 lines (131 sloc)  3.44 KB
 // Copyright 2018 itcloudy@qq.com.  All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
