@@ -26,7 +26,7 @@
 * [Adding a Real-time Database to a flutter application with Firebase](https://github.com/itcloudy/chat_app/tree/chapter-24)
 * [Building a List in Redux with Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-25)
 * [Managing State with the Scoped Model Pattern in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-26)
-
+* [Building a Mine Sweeper Game using Dart's Flutter Framework (Part 1)](https://github.com/itcloudy/chat_app/tree/chapter-27)
 
 
 
