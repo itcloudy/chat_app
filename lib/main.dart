@@ -1,145 +1,97 @@
-
 // Copyright 2018 itcloudy@qq.com.  All rights reserved.
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
-import 'package:scoped_model/scoped_model.dart';
 
-class AppModel extends Model {
-  int _count = 0;
 
-  int get count => _count;
+enum TitleState { covered, blown, open, flagged, revealed }
 
-  void increment() {
-    _count++;
-    notifyListeners();
-  }
 
-  void decrement() {
-    _count--;
-    notifyListeners();
-  }
-}
+void main() => runApp(MineSweeper());
 
-void main() => runApp(MyApp());
+class MineSweeper extends StatelessWidget {
 
-class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Counter Example',
-      theme: ThemeData.dark(),
-      home: ScopedModel<AppModel>(
-        model: AppModel(),
-        child: Home(),
-      ),
+      title: "Mine Sweeper",
+      home: Board(),
     );
   }
 }
 
-class Home extends StatelessWidget {
-  final AppModel appModelOne = AppModel();
-  final AppModel appModelTwo = AppModel();
-
+class Board extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Basic Counter"),
-      ),
-      body: Center(
-        child: Row (
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            ScopedModel<AppModel>(
-              model: appModelOne,
-              child: Counter(
-                counterName: "App Model One",
-              ),
-            ),
-            ScopedModel<AppModel>(
-              model: appModelTwo,
-              child: Counter(
-                counterName: "App Model Two",
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  _BoardState createState() => _BoardState();
 }
 
-class Counter extends StatelessWidget {
-  final String counterName;
+class _BoardState extends State<Board> {
+  final int rows = 9;
+  final int cols = 9;
+  final int numOfMines = 11;
 
-  Counter({Key key,this.counterName});
+  List<List<TitleState>> uiState;
+
+  void resetBoard() {
+    uiState = new List<List<TitleState>>.generate(rows, (row) {
+      return new List<TitleState>.filled(cols, TitleState.covered);
+    });
+  }
+
 
   @override
-  Widget build(BuildContext context) {
-    return ScopedModelDescendant<AppModel>(
-      builder: (context,child,model)=>Column(
+  void initState() {
+    resetBoard();
+    super.initState();
+  }
+
+  Widget buildBoard() {
+    List<Row> boardRow = <Row>[];
+    for (int i = 0; i < rows; i++) {
+      List<Widget> rowChildren = <Widget>[];
+      for (int j = 0; j < cols; j++) {
+        TitleState state = uiState[i][j];
+        if (state == TitleState.covered) {
+          rowChildren.add(GestureDetector(
+            child: Listener(
+              child: Container(
+                margin: EdgeInsets.all(2.0),
+                height: 20.0,
+                width: 20.0,
+                color: Colors.grey,
+              ),
+            ),
+          ));
+        }
+      }
+      boardRow.add(Row(
+        children: rowChildren,
         mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text("$counterName:"),
-          Text(
-            model.count.toString(),
-            style: Theme.of(context).textTheme.display1,
-          ),
-          ButtonBar(
-            children: <Widget>[
-              IconButton(
-                icon: Icon(Icons.add),
-                onPressed: model.increment,
-              ),
-              IconButton(
-                icon: Icon(Icons.minimize),
-                onPressed: model.decrement,
-              ),
-            ],
-          ),
-        ],
+        key: ValueKey<int>(i),
+      ));
+    }
+    return Container(
+      color: Colors.grey[700],
+      padding: EdgeInsets.all(10.0),
+      child: Column(
+        children: boardRow,
       ),
     );
   }
-}
 
-
-class Home1 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Basic Counter"),
+        title: Text("Mine Sweeper"),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text("Counter:"),
-            ScopedModelDescendant<AppModel>(
-              builder: (context, child, model) => Text(
-                model.count.toString(),
-                style: Theme.of(context).textTheme.display1,
-              ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: ScopedModelDescendant<AppModel>(
-        builder: (context, child, model) => ButtonBar(
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.add),
-              onPressed: model.increment,
-            ),
-            IconButton(
-              icon: Icon(Icons.minimize),
-              onPressed: model.decrement,
-            ),
-          ],
+      body: Container(
+        color: Colors.grey[50],
+        child: Center(
+          child: buildBoard(),
         ),
       ),
     );
   }
+
 }
