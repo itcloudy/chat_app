@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:async';
 
 enum TitleState { covered, blown, open, flagged, revealed }
 
@@ -31,7 +32,27 @@ class _BoardState extends State<Board> {
   List<List<TitleState>> uiState;
   List<List<bool>> titles;
 
+  bool alive;
+  bool wonGame;
+  int minesFound;
+  Timer timer;
+  Stopwatch stopwatch = Stopwatch();
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
+
   void resetBoard() {
+    alive = true;
+    wonGame = false;
+    minesFound = 0;
+    stopwatch.reset();
+    timer?.cancel();
+    timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+      setState(() {});
+    });
     uiState = new List<List<TitleState>>.generate(rows, (row) {
       return new List<TitleState>.filled(cols, TitleState.covered);
     });
@@ -58,19 +79,25 @@ class _BoardState extends State<Board> {
   }
 
   Widget buildBoard() {
+    bool hasCoveredCell = false;
     List<Row> boardRow = <Row>[];
     for (int y = 0; y < rows; y++) {
       List<Widget> rowChildren = <Widget>[];
       for (int x = 0; x < cols; x++) {
         TitleState state = uiState[y][x];
         int count = mineCount(x, y);
+        if (!alive) {
+          if (state != TitleState.blown) {
+            state = titles[y][x] ? TitleState.revealed : state;
+          }
+        }
         if (state == TitleState.covered || state == TitleState.flagged) {
           rowChildren.add(GestureDetector(
             onLongPress: () {
               flag(x, y);
             },
             onTap: () {
-              probe(x, y);
+             if (state ==TitleState.covered) probe(x, y);
             },
             child: Listener(
               child: CoveredMineTile(
@@ -80,6 +107,9 @@ class _BoardState extends State<Board> {
               ),
             ),
           ));
+          if (state == TitleState.covered){
+            hasCoveredCell = true;
+          }
         } else {
           rowChildren.add(OpenMineTile(
             state: state,
@@ -93,6 +123,12 @@ class _BoardState extends State<Board> {
         key: ValueKey<int>(y),
       ));
     }
+    if (!hasCoveredCell){
+      if ((minesFound == numOfMines) &&alive){
+        wonGame = true;
+        stopwatch.stop();
+      }
+    }
     return Container(
       color: Colors.grey[700],
       padding: EdgeInsets.all(10.0),
@@ -104,9 +140,37 @@ class _BoardState extends State<Board> {
 
   @override
   Widget build(BuildContext context) {
+    int timeElapsed = stopwatch.elapsedMilliseconds ~/1000;
     return Scaffold(
+      resizeToAvoidBottomPadding: false,
       appBar: AppBar(
+        centerTitle: true,
         title: Text("Mine Sweeper"),
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(45.0),
+          child: Row(
+            children: <Widget>[
+              FlatButton(
+                child: Text("Reset Board",style: TextStyle(color: Colors.white)),
+                onPressed: ()=>resetBoard(),
+                highlightColor: Colors.green,
+                splashColor: Colors.redAccent,
+                shape: StadiumBorder(side: BorderSide(color: Colors.green)),
+                color: Colors.blueAccent[100],
+              ),
+              Container(
+                height: 40.0,
+                alignment: Alignment.center,
+                child: RichText(text: TextSpan(
+                  text:wonGame?
+                      "You've Won! $timeElapsed seconds"
+                      : alive ?"[Mines Found: $minesFound] [Total Mines: $numOfMines ]  [$timeElapsed seconds] "
+                      : "You've lost! $timeElapsed seconds"),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       body: Container(
         color: Colors.grey[50],
@@ -118,12 +182,16 @@ class _BoardState extends State<Board> {
   }
 
   void probe(int x, int y) {
+    if (!alive) return;
     if (uiState[y][x] == TitleState.flagged) return;
     setState(() {
       if (titles[y][x]) {
         uiState[y][x] = TitleState.blown;
+        alive = false;
+        timer.cancel();
       } else {
         open(x, y);
+        if (!stopwatch.isRunning) stopwatch.start();
       }
     });
   }
@@ -144,11 +212,14 @@ class _BoardState extends State<Board> {
   }
 
   void flag(int x, int y) {
+    if (!alive) return;
     setState(() {
       if (uiState[y][x] == TitleState.flagged) {
         uiState[y][x] = TitleState.covered;
+        --minesFound;
       } else {
         uiState[y][x] = TitleState.flagged;
+        ++ minesFound;
       }
     });
   }
