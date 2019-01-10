@@ -30,5 +30,5 @@
 * [Building a Mine Sweeper Game using Dart's Flutter Framework (Part 2)](https://github.com/itcloudy/chat_app/tree/chapter-28)
 * [Building a Mine Sweeper Game using Dart's Flutter Framework (Part 3)](https://github.com/itcloudy/chat_app/tree/chapter-29)
 * [Building a Mine Sweeper Game using Dart's Flutter Framework (Part 4, Final)](https://github.com/itcloudy/chat_app/tree/chapter-30)
-
+* [Authenticating Guest Users for Firebase using Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-31)
 
