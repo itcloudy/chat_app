@@ -59,31 +59,38 @@ class _BoardState extends State<Board> {
 
   Widget buildBoard() {
     List<Row> boardRow = <Row>[];
-    for (int i = 0; i < rows; i++) {
+    for (int y = 0; y < rows; y++) {
       List<Widget> rowChildren = <Widget>[];
-      for (int j = 0; j < cols; j++) {
-        TitleState state = uiState[i][j];
+      for (int x = 0; x < cols; x++) {
+        TitleState state = uiState[y][x];
+        int count = mineCount(x, y);
         if (state == TitleState.covered || state == TitleState.flagged) {
           rowChildren.add(GestureDetector(
+            onLongPress: () {
+              flag(x, y);
+            },
+            onTap: () {
+              probe(x, y);
+            },
             child: Listener(
               child: CoveredMineTile(
                 flagged: state == TitleState.flagged,
-                postY: j,
-                posX: i,
+                postY: y,
+                posX: x,
               ),
             ),
           ));
-        }else{
+        } else {
           rowChildren.add(OpenMineTile(
             state: state,
-            count: 1,
+            count: count,
           ));
         }
       }
       boardRow.add(Row(
         children: rowChildren,
         mainAxisAlignment: MainAxisAlignment.center,
-        key: ValueKey<int>(i),
+        key: ValueKey<int>(y),
       ));
     }
     return Container(
@@ -109,6 +116,59 @@ class _BoardState extends State<Board> {
       ),
     );
   }
+
+  void probe(int x, int y) {
+    if (uiState[y][x] == TitleState.flagged) return;
+    setState(() {
+      if (titles[y][x]) {
+        uiState[y][x] = TitleState.blown;
+      } else {
+        open(x, y);
+      }
+    });
+  }
+
+  void open(int x, int y) {
+    if (!inBoard(x, y)) return;
+    if (uiState[y][x] == TitleState.open) return;
+    uiState[y][x] = TitleState.open;
+    if (mineCount(x, y) > 0) return;
+    open(x - 1, y);
+    open(x + 1, y);
+    open(x, y - 1);
+    open(x, y + 1);
+    open(x - 1, y - 1);
+    open(x + 1, y + 1);
+    open(x + 1, y - 1);
+    open(x - 1, y + 1);
+  }
+
+  void flag(int x, int y) {
+    setState(() {
+      if (uiState[y][x] == TitleState.flagged) {
+        uiState[y][x] = TitleState.covered;
+      } else {
+        uiState[y][x] = TitleState.flagged;
+      }
+    });
+  }
+
+  int mineCount(int x, int y) {
+    int count = 0;
+    count += bombs(x - 1, y);
+    count += bombs(x + 1, y);
+    count += bombs(x, y - 1);
+    count += bombs(x, y + 1);
+    count += bombs(x - 1, y - 1);
+    count += bombs(x + 1, y + 1);
+    count += bombs(x + 1, y - 1);
+    count += bombs(x - 1, y + 1);
+    return count;
+  }
+
+  int bombs(int x, int y) => inBoard(x, y) && titles[y][x] ? 1 : 0;
+
+  bool inBoard(int x, int y) => x >= 0 && x < cols && y >= 0 && y < rows;
 }
 
 Widget buildTile(Widget child) {
@@ -172,23 +232,33 @@ class OpenMineTile extends StatelessWidget {
 
   OpenMineTile({this.state, this.count});
 
+  final List textColor = [
+    Colors.blue,
+    Colors.green,
+    Colors.red,
+    Colors.purple,
+    Colors.cyan,
+    Colors.amber,
+    Colors.brown,
+    Colors.black,
+  ];
+
   @override
   Widget build(BuildContext context) {
     Widget text;
-    if (state ==TitleState.open){
-      if(count!=0){
+    if (state == TitleState.open) {
+      if (count != 0) {
         text = RichText(
           text: TextSpan(
-            text: '$count',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
-            )
-          ),
+              text: '$count',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: textColor[count - 1],
+              )),
           textAlign: TextAlign.center,
         );
       }
-    }else{
+    } else {
       text = RichText(
         text: TextSpan(
           text: '\u2739',
