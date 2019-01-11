@@ -1,88 +1,78 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.landscapeLeft, DeviceOrientation.portraitUp]);
+  runApp(MyApp());
+}
 
-class MyApp extends StatelessWidget{
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-      home: TempApp(),
+      title: "Orientation and Lifecyle",
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: MyHomePage(),
     );
   }
 }
-class TempApp extends StatefulWidget {
+
+class MyHomePage extends StatefulWidget {
   @override
-  _TempAppState createState() => _TempAppState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _TempAppState extends State<TempApp> {
-  double input;
-  double output;
-  bool fOrC;
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
+  AppLifecycleState appLifecycleState;
+  List<String> data;
+  TextEditingController controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    TextField inputFiled = TextField(
-      keyboardType: TextInputType.number,
-      onChanged: (str){
-        try{
-          input = double.parse(str);
-        }catch(e){
-          input = 0.0;
-        }
-      },
-      decoration: InputDecoration(
-        labelText:
-          "Input a Value ${fOrC == false ? "Fahrenheit":"Celsius"}",
-      ),
-    );
-
-    AppBar appBar = AppBar(
-      title: Text("Temperature Calculator"),
-
-    );
-
-    Container tempSwitch = Container(
-      child: Column(
-        children: <Widget>[
-          Text("Choose Fahrenheit or Celsius"),
-          Switch(
-              value: fOrC,
-              onChanged: (e){
-                setState(() {
-                  fOrC = !fOrC;
-                });
-              }
-          ),
-        ],
-      ),
-    );
     return Scaffold(
-      body: Container(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            inputFiled,
-            tempSwitch
-          ],
-        ),
-      ),
       appBar: AppBar(
-        title: Text("Temperature Calculator"),
+        title: Text("Orientation and Lifecycle"),
       ),
+      body: OrientationBuilder(
+          builder: (BuildContext context, Orientation orientation) {
+        return Center(
+          child: Container(
+            color: orientation == Orientation.landscape
+                ? Colors.amber
+                : Colors.purple,
+            child: Text("App life Cycle State $appLifecycleState"),
+          ),
+//          GridView.count(
+//            crossAxisCount: orientation == Orientation.landscape ? 4 : 2,
+//            children: List.generate(40, (int i) {
+//              return Text("Title $i");
+//            }),
+//          ),
+        );
+      }),
     );
   }
 
   @override
   void initState() {
     super.initState();
-    input = 0.0;
-    output = 0.0;
-    fOrC = true;
+    WidgetsBinding.instance.addObserver(this);
+    data =[];
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    setState(() {
+      appLifecycleState = state;
+    });
+    print(state);
+  }
 }
