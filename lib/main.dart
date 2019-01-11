@@ -4,6 +4,8 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:async';
+import 'package:firebase_admob/firebase_admob.dart';
+import 'app_id.dart' show APP_ID;
 
 enum TitleState { covered, blown, open, flagged, revealed }
 
@@ -25,6 +27,41 @@ class Board extends StatefulWidget {
 }
 
 class _BoardState extends State<Board> {
+  static final MobileAdTargetingInfo targetingInfo = MobileAdTargetingInfo(
+    testDevices: APP_ID != null ? [APP_ID] : null,
+    keywords: ['Games', 'Puzzles'],
+  );
+
+  BannerAd bannerAd;
+  InterstitialAd interstitialAd;
+
+  BannerAd buildBanner() {
+    return BannerAd(
+        adUnitId: BannerAd.testAdUnitId,
+        size: AdSize.banner,
+        listener: (MobileAdEvent event) {
+          if (event == MobileAdEvent.loaded) {
+            bannerAd.show();
+          } else if (event == MobileAdEvent.clicked) {
+            print(event);
+          }
+        });
+  }
+
+  InterstitialAd buildInterstitialAd() {
+    return InterstitialAd(
+        adUnitId: InterstitialAd.testAdUnitId,
+        targetingInfo: targetingInfo,
+        listener: (MobileAdEvent event) {
+          if (event == MobileAdEvent.failedToLoad){
+            interstitialAd..load();
+          }else if (event == MobileAdEvent.closed){
+            interstitialAd = buildInterstitialAd()..load();
+          }
+          print(event);
+        });
+  }
+
   final int rows = 9;
   final int cols = 9;
   final int numOfMines = 11;
@@ -41,6 +78,8 @@ class _BoardState extends State<Board> {
   @override
   void dispose() {
     timer?.cancel();
+    bannerAd?.dispose();
+    interstitialAd?.dispose();
     super.dispose();
   }
 
@@ -74,8 +113,13 @@ class _BoardState extends State<Board> {
 
   @override
   void initState() {
-    resetBoard();
     super.initState();
+    resetBoard();
+
+    FirebaseAdMob.instance.initialize(appId: FirebaseAdMob.testAppId);
+    bannerAd = buildBanner()..load();
+    interstitialAd = buildInterstitialAd()..load();
+//    RewardedVideoAd
   }
 
   Widget buildBoard() {
@@ -97,7 +141,7 @@ class _BoardState extends State<Board> {
               flag(x, y);
             },
             onTap: () {
-             if (state ==TitleState.covered) probe(x, y);
+              if (state == TitleState.covered) probe(x, y);
             },
             child: Listener(
               child: CoveredMineTile(
@@ -107,7 +151,7 @@ class _BoardState extends State<Board> {
               ),
             ),
           ));
-          if (state == TitleState.covered){
+          if (state == TitleState.covered) {
             hasCoveredCell = true;
           }
         } else {
@@ -123,8 +167,8 @@ class _BoardState extends State<Board> {
         key: ValueKey<int>(y),
       ));
     }
-    if (!hasCoveredCell){
-      if ((minesFound == numOfMines) &&alive){
+    if (!hasCoveredCell) {
+      if ((minesFound == numOfMines) && alive) {
         wonGame = true;
         stopwatch.stop();
       }
@@ -140,7 +184,10 @@ class _BoardState extends State<Board> {
 
   @override
   Widget build(BuildContext context) {
-    int timeElapsed = stopwatch.elapsedMilliseconds ~/1000;
+    int timeElapsed = stopwatch.elapsedMilliseconds ~/ 1000;
+    bannerAd
+      ..load()
+      ..show();
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       appBar: AppBar(
@@ -151,8 +198,14 @@ class _BoardState extends State<Board> {
           child: Row(
             children: <Widget>[
               FlatButton(
-                child: Text("Reset Board",style: TextStyle(color: Colors.white)),
-                onPressed: ()=>resetBoard(),
+                child:
+                    Text("Reset Board", style: TextStyle(color: Colors.white)),
+                onPressed: () {
+                  resetBoard();
+                  interstitialAd
+                    ..load()
+                    ..show();
+                },
                 highlightColor: Colors.green,
                 splashColor: Colors.redAccent,
                 shape: StadiumBorder(side: BorderSide(color: Colors.green)),
@@ -161,11 +214,13 @@ class _BoardState extends State<Board> {
               Container(
                 height: 40.0,
                 alignment: Alignment.center,
-                child: RichText(text: TextSpan(
-                  text:wonGame?
-                      "You've Won! $timeElapsed seconds"
-                      : alive ?"[Mines Found: $minesFound] [Total Mines: $numOfMines ]  [$timeElapsed seconds] "
-                      : "You've lost! $timeElapsed seconds"),
+                child: RichText(
+                  text: TextSpan(
+                      text: wonGame
+                          ? "You've Won! $timeElapsed seconds"
+                          : alive
+                              ? "[Mines Found: $minesFound] [Total Mines: $numOfMines ]  [$timeElapsed seconds] "
+                              : "You've lost! $timeElapsed seconds"),
                 ),
               ),
             ],
@@ -219,7 +274,7 @@ class _BoardState extends State<Board> {
         --minesFound;
       } else {
         uiState[y][x] = TitleState.flagged;
-        ++ minesFound;
+        ++minesFound;
       }
     });
   }
