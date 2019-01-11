@@ -1,126 +1,95 @@
-// Copyright 2018 itcloudy@qq.com.  All rights reserved.
-// Use of this source code is governed by a MIT style
-// license that can be found in the LICENSE file.
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-void main() => runApp(MyApp());
+import 'pages/calculate_distance_widget.dart';
+import 'pages/current_location_widget.dart';
+import 'pages/location_stream_widget.dart';
 
-class MyApp extends StatelessWidget {
-  final routes = <String, WidgetBuilder>{
-    LoginPage.route: (BuildContext context) => LoginPage(),
-    HomePage.route: (BuildContext context) => HomePage(),
-  };
+void main() => runApp(GeolocatorExampleApp());
+
+enum TabItem { singleLocation, locationStream, distance }
+
+class GeolocatorExampleApp extends StatefulWidget {
+  @override
+  State<GeolocatorExampleApp> createState() => BottomNavigationState();
+}
+
+class BottomNavigationState extends State<GeolocatorExampleApp> {
+  TabItem _currentItem = TabItem.singleLocation;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Auth Example",
-      theme: ThemeData.dark(),
-      home: LoginPage(),
-      routes: routes,
-    );
-  }
-}
-
-class LoginPage extends StatefulWidget {
-  static final String route = "login-page";
-
-  @override
-  _LoginPageState createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-
-  Future<FirebaseUser> signInAnon() async {
-    FirebaseUser user = await firebaseAuth.signInAnonymously();
-    print("Signed in${user.uid}");
-    return user;
-  }
-
-  void signOut() {
-    firebaseAuth.signOut();
-    print("sign out");
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final loginButton = Container(
-      padding: EdgeInsets.all(10.0),
-      child: Material(
-        borderRadius: BorderRadius.circular(30.0),
-        shadowColor: Colors.deepOrange,
-        elevation: 10.0,
-        child: MaterialButton(
-          minWidth: 150.0,
-          height: 50.0,
-          color: Colors.orange,
-          child: Text("Login as Guest"),
-          onPressed: () {
-            signInAnon().then((FirebaseUser user) {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => HomePage(user: user)));
-            }).catchError((e) => print(e));
-          },
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Geolocator Example App'),
         ),
+        body: _buildBody(),
+        bottomNavigationBar: _buildBottomNavigationBar(),
       ),
     );
-    final logoutButton = Container(
-      padding: EdgeInsets.all(10.0),
-      child: FlatButton(
-        color: Colors.white,
-        onPressed: () {
-          signOut();
-        },
-        child: Text(
-          "Sign Out",
-          style: TextStyle(color: Colors.black),
-        ),
-      ),
+  }
+
+  Widget _buildBody() {
+    switch (_currentItem) {
+      case TabItem.locationStream:
+        return LocationStreamWidget();
+      case TabItem.distance:
+        return CalculateDistanceWidget();
+      case TabItem.singleLocation:
+      default:
+        return CurrentLocationWidget();
+    }
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      items: <BottomNavigationBarItem>[
+        _buildBottomNavigationBarItem(
+            Icons.location_on, TabItem.singleLocation),
+        _buildBottomNavigationBarItem(Icons.clear_all, TabItem.locationStream),
+        _buildBottomNavigationBarItem(Icons.redo, TabItem.distance),
+      ],
+      onTap: _onSelectTab,
     );
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Login Page"),
+  }
+
+  BottomNavigationBarItem _buildBottomNavigationBarItem(
+      IconData icon, TabItem tabItem) {
+    final String text = tabItem.toString().split('.').last;
+    final Color color =
+    _currentItem == tabItem ? Theme.of(context).primaryColor : Colors.grey;
+
+    return BottomNavigationBarItem(
+      icon: Icon(
+        icon,
+        color: color,
       ),
-      body: Center(
-        child: ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.all(10.0),
-          children: <Widget>[
-            loginButton,
-            logoutButton,
-          ],
+      title: Text(
+        text,
+        style: TextStyle(
+          color: color,
         ),
       ),
     );
   }
-}
 
-class HomePage extends StatelessWidget {
-  static final String route = "home-page";
+  void _onSelectTab(int index) {
+    TabItem selectedTabItem;
 
-  final FirebaseUser user;
+    switch (index) {
+      case 1:
+        selectedTabItem = TabItem.locationStream;
+        break;
+      case 2:
+        selectedTabItem = TabItem.distance;
+        break;
+      default:
+        selectedTabItem = TabItem.singleLocation;
+    }
 
-  HomePage({this.user});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Home Page"),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text("${user.uid}"),
-            Text("${user.displayName}"),
-            Text("${user.isAnonymous}")
-
-          ],
-        ),
-      ),
-    );
+    setState(() {
+      _currentItem = selectedTabItem;
+    });
   }
 }

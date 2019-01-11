@@ -31,4 +31,6 @@
 * [Building a Mine Sweeper Game using Dart's Flutter Framework (Part 3)](https://github.com/itcloudy/chat_app/tree/chapter-29)
 * [Building a Mine Sweeper Game using Dart's Flutter Framework (Part 4, Final)](https://github.com/itcloudy/chat_app/tree/chapter-30)
 * [Authenticating Guest Users for Firebase using Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-31)
+* [How to Monetize Your Flutter Applications Using Admob](https://github.com/itcloudy/chat_app/tree/chapter-32)
+* [Using Geolocator to Communicate with the GPS and Build a Map in Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-33)
 
