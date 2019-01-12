@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_flux/flutter_flux.dart';
-import 'stores.dart';
+import 'dart:async';
+import 'dart:io';
+import 'package:battery/battery.dart';
+import 'package:connectivity/connectivity.dart';
+import 'package:device_info/device_info.dart';
 
 void main() => runApp(MyApp());
 
@@ -8,84 +11,101 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Flux Example",
-      theme: ThemeData.dark(),
-      home: HomeScreen(),
+      title: "Flutter Utils Demo",
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: MyHomePage(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
+class MyHomePage extends StatefulWidget {
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with StoreWatcherMixin<HomeScreen> {
-  CoinStore store;
+class _MyHomePageState extends State<MyHomePage> {
+  Battery battery = Battery();
+  BatteryState batteryState;
+
+  StreamSubscription<BatteryState> batSub;
+
+  ConnectivityResult connectionStatus;
+  Connectivity connectivity = Connectivity();
+  StreamSubscription<ConnectivityResult> connSub;
+
+
+  DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+  AndroidDeviceInfo androidDeviceInfo;
+  IosDeviceInfo iosDeviceInfo;
+
+  Future<Null>  initPlatform() async {
+    ConnectivityResult result;
+    AndroidDeviceInfo aInfo;
+    IosDeviceInfo iInfo;
+
+
+    try {
+      if(Platform.isAndroid){
+        aInfo = await deviceInfoPlugin.androidInfo;
+      }else if (Platform.isIOS){
+        iInfo = await deviceInfoPlugin.iosInfo;
+      }
+      result = await connectivity.checkConnectivity();
+    } catch (e) {
+      print(e.toString());
+      result = null;
+    }
+    if (!mounted) return;
+    setState(() {
+      connectionStatus = result;
+      androidDeviceInfo = aInfo;
+      iosDeviceInfo = iInfo;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    store = listenToStore(coinStoreToken);
+    initPlatform();
+    connSub = connectivity.onConnectivityChanged.listen((ConnectivityResult result){
+      setState(() {
+        connectionStatus = result;
+      });
+    });
+    batSub = battery.onBatteryStateChanged.listen((BatteryState state) {
+      setState(() {
+        batteryState = state;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    batSub?.cancel();
+    connSub?.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Flux Crypto Ticker"),
-        actions: <Widget>[
-          RaisedButton(
-            color: Colors.blueGrey,
-            onPressed: () {
-              loadCoinsAction.call();
-            },
-            child: Text("Get Coins"),
-          ),
-        ],
+        title: Text("Flutter Utils"),
       ),
-      body: ListView(
-        children: store.coins.map((coin)=>CoinWidget(coin)).toList(),
-      ),
-    );
-  }
-}
-
-class CoinWidget extends StatelessWidget {
-  final Coin coin;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(20.0),
-      decoration: BoxDecoration(
-        border: Border.all(width: 5.0),
-      ),
-      child: Card(
-        elevation: 10.0,
-        color: Colors.lightBlue,
-        child: Row(
+      body: Center(
+        child: Column(
           children: <Widget>[
-            Expanded(
-              child: ListTile(
-                title: Text(coin.name),
-                leading: CircleAvatar(
-                  child: Text(
-                    coin.symbol,
-                    style: TextStyle(fontSize: 14.0),
-                  ),
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.amber,
-                ),
-                subtitle: Text("\$${coin.price.toStringAsFixed(2)}"),
-              ),
-            ),
+            Text('Battery: $batteryState'),
+            Text('Connection Status: $connectionStatus'),
+            Text('Device Model: ${iosDeviceInfo.model}'),
+            Text('Device SystemVersion: ${iosDeviceInfo.systemVersion}'),
+            Text('Device systemName: ${iosDeviceInfo.systemName}'),
+            Text('Device utsname: ${iosDeviceInfo.utsname}'),
+            Text('Device isPhysicalDevice: ${iosDeviceInfo.isPhysicalDevice}'),
+
           ],
         ),
       ),
     );
   }
-
-  CoinWidget(this.coin);
 }
