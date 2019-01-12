@@ -37,3 +37,4 @@
 * [Managing State with Flutter Flux and Building a Crypto Tracker App](https://github.com/itcloudy/chat_app/tree/chapter-35)
 * [Making Use of Utility Plugins for Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-36)
 * [Interfacing with Websockets using Dart's Flutter Framework](https://github.com/itcloudy/chat_app/tree/chapter-37)
+* [Weather Application with Flutter (Part 1, Handling Complex Json with Code Generation)](https://github.com/itcloudy/chat_app/tree/chapter-38)
