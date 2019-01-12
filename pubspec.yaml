@@ -23,6 +23,7 @@ dependencies:
   geolocator: ^2.1.1
 
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -40,10 +41,11 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  assets:
-    - images/1.jpg
-    - images/2.jpg
-    - images/3.jpg
+
+#  assets:
+#    - images/1.jpg
+#    - images/2.jpg
+#    - images/3.jpg
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

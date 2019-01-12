@@ -1,95 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import 'pages/calculate_distance_widget.dart';
-import 'pages/current_location_widget.dart';
-import 'pages/location_stream_widget.dart';
 
-void main() => runApp(GeolocatorExampleApp());
-
-enum TabItem { singleLocation, locationStream, distance }
-
-class GeolocatorExampleApp extends StatefulWidget {
-  @override
-  State<GeolocatorExampleApp> createState() => BottomNavigationState();
+void main() {
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.landscapeLeft, DeviceOrientation.portraitUp]);
+  runApp(MyApp());
 }
 
-class BottomNavigationState extends State<GeolocatorExampleApp> {
-  TabItem _currentItem = TabItem.singleLocation;
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Geolocator Example App'),
-        ),
-        body: _buildBody(),
-        bottomNavigationBar: _buildBottomNavigationBar(),
+      title: "Orientation and Lifecyle",
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
+  AppLifecycleState appLifecycleState;
+  List<String> data;
+  TextEditingController controller = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Orientation and Lifecycle"),
       ),
+      body: OrientationBuilder(
+          builder: (BuildContext context, Orientation orientation) {
+        return Center(
+          child: Container(
+            color: orientation == Orientation.landscape
+                ? Colors.amber
+                : Colors.purple,
+            child: Text("App life Cycle State $appLifecycleState"),
+          ),
+//          GridView.count(
+//            crossAxisCount: orientation == Orientation.landscape ? 4 : 2,
+//            children: List.generate(40, (int i) {
+//              return Text("Title $i");
+//            }),
+//          ),
+        );
+      }),
     );
   }
 
-  Widget _buildBody() {
-    switch (_currentItem) {
-      case TabItem.locationStream:
-        return LocationStreamWidget();
-      case TabItem.distance:
-        return CalculateDistanceWidget();
-      case TabItem.singleLocation:
-      default:
-        return CurrentLocationWidget();
-    }
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    data = [];
   }
 
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      items: <BottomNavigationBarItem>[
-        _buildBottomNavigationBarItem(
-            Icons.location_on, TabItem.singleLocation),
-        _buildBottomNavigationBarItem(Icons.clear_all, TabItem.locationStream),
-        _buildBottomNavigationBarItem(Icons.redo, TabItem.distance),
-      ],
-      onTap: _onSelectTab,
-    );
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
-  BottomNavigationBarItem _buildBottomNavigationBarItem(
-      IconData icon, TabItem tabItem) {
-    final String text = tabItem.toString().split('.').last;
-    final Color color =
-    _currentItem == tabItem ? Theme.of(context).primaryColor : Colors.grey;
-
-    return BottomNavigationBarItem(
-      icon: Icon(
-        icon,
-        color: color,
-      ),
-      title: Text(
-        text,
-        style: TextStyle(
-          color: color,
-        ),
-      ),
-    );
-  }
-
-  void _onSelectTab(int index) {
-    TabItem selectedTabItem;
-
-    switch (index) {
-      case 1:
-        selectedTabItem = TabItem.locationStream;
-        break;
-      case 2:
-        selectedTabItem = TabItem.distance;
-        break;
-      default:
-        selectedTabItem = TabItem.singleLocation;
-    }
-
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
     setState(() {
-      _currentItem = selectedTabItem;
+      appLifecycleState = state;
     });
+    print(state);
   }
 }
