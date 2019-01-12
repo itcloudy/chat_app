@@ -1,79 +1,91 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_flux/flutter_flux.dart';
+import 'stores.dart';
 
-
-void main() {
-  SystemChrome.setPreferredOrientations(
-      [DeviceOrientation.landscapeLeft, DeviceOrientation.portraitUp]);
-  runApp(MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Orientation and Lifecyle",
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: MyHomePage(),
+      title: "Flux Example",
+      theme: ThemeData.dark(),
+      home: HomeScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class HomeScreen extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
-  AppLifecycleState appLifecycleState;
-  List<String> data;
-  TextEditingController controller = TextEditingController();
+class _HomeScreenState extends State<HomeScreen>
+    with StoreWatcherMixin<HomeScreen> {
+  CoinStore store;
+
+  @override
+  void initState() {
+    super.initState();
+    store = listenToStore(coinStoreToken);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Orientation and Lifecycle"),
-      ),
-      body: OrientationBuilder(
-          builder: (BuildContext context, Orientation orientation) {
-        return Center(
-          child: Container(
-            color: orientation == Orientation.landscape
-                ? Colors.amber
-                : Colors.purple,
-            child: Text("App life Cycle State $appLifecycleState"),
+        title: Text("Flux Crypto Ticker"),
+        actions: <Widget>[
+          RaisedButton(
+            color: Colors.blueGrey,
+            onPressed: () {
+              loadCoinsAction.call();
+            },
+            child: Text("Get Coins"),
           ),
-//          GridView.count(
-//            crossAxisCount: orientation == Orientation.landscape ? 4 : 2,
-//            children: List.generate(40, (int i) {
-//              return Text("Title $i");
-//            }),
-//          ),
-        );
-      }),
+        ],
+      ),
+      body: ListView(
+        children: store.coins.map((coin)=>CoinWidget(coin)).toList(),
+      ),
+    );
+  }
+}
+
+class CoinWidget extends StatelessWidget {
+  final Coin coin;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        border: Border.all(width: 5.0),
+      ),
+      child: Card(
+        elevation: 10.0,
+        color: Colors.lightBlue,
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: ListTile(
+                title: Text(coin.name),
+                leading: CircleAvatar(
+                  child: Text(
+                    coin.symbol,
+                    style: TextStyle(fontSize: 14.0),
+                  ),
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.amber,
+                ),
+                subtitle: Text("\$${coin.price.toStringAsFixed(2)}"),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    data = [];
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    setState(() {
-      appLifecycleState = state;
-    });
-    print(state);
-  }
+  CoinWidget(this.coin);
 }
